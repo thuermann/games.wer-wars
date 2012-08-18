@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.4 2012/08/18 07:44:09 urs Exp $
+ * $Id: wer-wars.c,v 1.5 2012/08/18 07:44:23 urs Exp $
  */
 
 #include <stdlib.h>
@@ -90,7 +90,7 @@ static void play(int n)
 		case D_3:
 			new = (pos + d) % m;
 			printf("walk %d -> %d\n", pos, new);
-
+		jump:
 			pos = new;
 			switch (a[pos]) {
 			case CLOCK:
@@ -98,8 +98,14 @@ static void play(int n)
 				printf("clock: %d\n", clock);
 				break;
 			case JUMP:
-				;
-				break;
+				if ((f = find(a, m, KNOWN, pos + 1, m)) >= 0)
+					new = (pos + 1 + f) % m;
+				else if ((f = find(a, m, PEEK, pos + 1, m)) >= 0)
+					new = (pos + 1 + f) % m;
+				else
+					assert(0);
+				printf("jump %d -> %d\n", pos, new);
+				goto jump;
 			case PEEK:
 				f = find(a, m, UNKNOWN, pos + 1, m);
 				if (f < 0)
