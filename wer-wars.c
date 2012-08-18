@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.9 2012/08/18 07:45:18 urs Exp $
+ * $Id: wer-wars.c,v 1.10 2012/08/18 07:45:28 urs Exp $
  */
 
 #include <stdlib.h>
@@ -9,7 +9,7 @@
 
 static void usage(const char *name)
 {
-	fprintf(stderr, "Usage: %s [-l limit] [-n n]\n", name);
+	fprintf(stderr, "Usage: %s [-c count] [-l limit] [-n n]\n", name);
 }
 
 enum die { D_1 = 1, D_2, D_3, D_123, D_CLOCK, D_GHOST };
@@ -27,11 +27,15 @@ int main(int argc, char **argv)
 {
 	int n     = 12;
 	int limit = 12;
+	int count = 1;
 	int opt, i;
 	int errflg = 0;
 
-	while ((opt = getopt(argc, argv, "l:n:")) != -1) {
+	while ((opt = getopt(argc, argv, "c:l:n:")) != -1) {
 		switch (opt) {
+		case 'c':
+			count = atoi(optarg);
+			break;
 		case 'l':
 			limit = atoi(optarg);
 			break;
@@ -49,7 +53,10 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	play(n, limit);
+	for (i = 0; i < count; i++) {
+		printf("---- game %d ----\n", i);
+		play(n, limit);
+	}
 
 	return 0;
 }
