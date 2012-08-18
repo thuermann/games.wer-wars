@@ -1,9 +1,10 @@
 /*
- * $Id: wer-wars.c,v 1.1 2012/08/15 20:12:30 urs Exp $
+ * $Id: wer-wars.c,v 1.2 2012/08/18 07:43:42 urs Exp $
  */
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 static void usage(const char *name)
 {
@@ -79,7 +80,7 @@ static void play(int n)
 			else if ((f = find(a, m, UNKNOWN, pos + 1, 2)) >= 0)
 				d = f + 1;
 			else
-				exit(1); /* cannot happen */
+				assert(0);
 		case D_1:
 		case D_2:
 		case D_3:
