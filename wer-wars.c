@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.2 2012/08/18 07:43:42 urs Exp $
+ * $Id: wer-wars.c,v 1.3 2012/08/18 07:43:52 urs Exp $
  */
 
 #include <stdlib.h>
@@ -42,7 +42,7 @@ static void play(int n)
 	int m = n + 2;
 	enum state a[n + 3];
 	int clock = 0;
-	int pos = 0, f;
+	int pos = 0, sw, f, f2;
 	int i;
 
 	for (i = 0; i < sizeof(a) / sizeof(a[0]); i++)
@@ -64,20 +64,24 @@ static void play(int n)
 			printf("clock: %d\n", clock);
 			break;
 		case D_GHOST:
-			f = find(a, m, UNKNOWN, pos + 1, m);
-			if (f >= 0) {
-				printf("swap %d,%d\n", (pos + f) % m, m);
-				swap(&a[(pos + f) % m], &a[m]);
-			}
+			f  = find(a, m, UNKNOWN, pos + 1, m);
+			f2 = find(a, m, KNOWN, pos + 1, m);
+			if (f < 0 || f2 >=0 && f2 < f)
+				f = f2;
+			sw = (pos + 1 + f) % m;
+			printf("swap %d,%d\n", sw, m);
+			swap(&a[sw], &a[m]);
 			break;
 		case D_123:
-			if ((f = find(a, m, KNOWN, pos + 1, 2)) >= 0)
+			if ((f = find(a, m, KNOWN, pos + 1, 3)) >= 0)
 				d = f + 1;
-			else if ((f = find(a, m, JUMP, pos + 1, 2)) >= 0)
+			else if ((f = find(a, m, JUMP, pos + 1, 3)) >= 0)
 				d = f + 1;
-			else if ((f = find(a, m, PEEK, pos + 1, 2)) >= 0)
+			else if ((f = find(a, m, PEEK, pos + 1, 3)) >= 0)
 				d = f + 1;
-			else if ((f = find(a, m, UNKNOWN, pos + 1, 2)) >= 0)
+			else if ((f = find(a, m, UNKNOWN, pos + 1, 3)) >= 0)
+				d = f + 1;
+			else if ((f = find(a, m, OPEN, pos + 1, 3)) >= 0)
 				d = f + 1;
 			else
 				assert(0);
