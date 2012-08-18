@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.7 2012/08/18 07:44:50 urs Exp $
+ * $Id: wer-wars.c,v 1.8 2012/08/18 07:45:01 urs Exp $
  */
 
 #include <stdlib.h>
@@ -59,8 +59,26 @@ static void play(int n, int limit)
 		for (i = 0; i < sizeof(a) / sizeof(a[0]); i++)
 			printf(" %d", a[i]);
 		putchar('\n');
+
 		enum die d = die();
-		printf("die: %d\n", d);
+
+		switch (d) {
+		case D_CLOCK:
+			printf("die: CLOCK\n");
+			break;
+		case D_GHOST:
+			printf("die: GHOST\n");
+			break;
+		case D_123:
+			printf("die: 123\n");
+			break;
+		case D_1:
+		case D_2:
+		case D_3:
+			printf("die: %d\n", d);
+			break;
+		}
+
 		switch (d) {
 		case D_CLOCK:
 			clock++;
