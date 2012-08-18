@@ -1,14 +1,15 @@
 /*
- * $Id: wer-wars.c,v 1.8 2012/08/18 07:45:01 urs Exp $
+ * $Id: wer-wars.c,v 1.9 2012/08/18 07:45:18 urs Exp $
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include <unistd.h>
 
 static void usage(const char *name)
 {
-	fprintf(stderr, "Usage: %s n\n", name);
+	fprintf(stderr, "Usage: %s [-l limit] [-n n]\n", name);
 }
 
 enum die { D_1 = 1, D_2, D_3, D_123, D_CLOCK, D_GHOST };
@@ -24,14 +25,29 @@ static int rnd(int min, int max);
 
 int main(int argc, char **argv)
 {
+	int n     = 12;
 	int limit = 12;
+	int opt, i;
+	int errflg = 0;
 
-	if (argc != 2) {
+	while ((opt = getopt(argc, argv, "l:n:")) != -1) {
+		switch (opt) {
+		case 'l':
+			limit = atoi(optarg);
+			break;
+		case 'n':
+			n = atoi(optarg);
+			break;
+		default:
+			errflg = 1;
+			break;
+		}
+	}
+
+	if (errflg || argc != optind) {
 		usage(argv[0]);
 		exit(1);
 	}
-
-	int n = atoi(argv[1]);
 
 	play(n, limit);
 
