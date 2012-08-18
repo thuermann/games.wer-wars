@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.6 2012/08/18 07:44:36 urs Exp $
+ * $Id: wer-wars.c,v 1.7 2012/08/18 07:44:50 urs Exp $
  */
 
 #include <stdlib.h>
@@ -41,6 +41,7 @@ int main(int argc, char **argv)
 static void play(int n, int limit)
 {
 	int nunknown = n;
+	int left = n - 1;
 	int m = n + 2;
 	enum state a[m + 1];
 	int clock = 0;
@@ -54,7 +55,7 @@ static void play(int n, int limit)
 	a[m/3]   = JUMP;
 	a[2*m/3] = PEEK;
 
-	while (nunknown > 1 && clock < limit) {
+	while (left > 0 && clock < limit) {
 		for (i = 0; i < sizeof(a) / sizeof(a[0]); i++)
 			printf(" %d", a[i]);
 		putchar('\n');
@@ -115,24 +116,29 @@ static void play(int n, int limit)
 				peek = (pos + 1 + f) % m;
 				a[peek] = KNOWN;
 				nunknown--;
-				printf("peek %d, left %d\n", peek, nunknown);
+				printf("peek %d: unknown %d, left %d\n",
+				       peek, nunknown, left);
 				break;
 			case UNKNOWN:
 				printf("guess %d: ", pos);
 				if (guess(nunknown)) {
 					a[pos] = OPEN;
 					nunknown--;
-					printf("ok, left %d\n", nunknown);
+					left--;
+					printf("ok, unknown %d, left %d\n",
+					       nunknown, left);
 				} else {
 					a[pos] = KNOWN;
 					nunknown--;
 					clock++;
-					printf("clock %d, left %d\n",
-					       clock, nunknown);
+					printf("clock %d, unknown %d, left %d\n",
+					       clock, nunknown, left);
 				}
 				break;
 			case KNOWN:
 				a[pos] = OPEN;
+				left--;
+				printf("open %d: left %d\n", pos, left);
 				break;
 			case OPEN:
 				break;
@@ -142,7 +148,7 @@ static void play(int n, int limit)
 		putchar('\n');
 	}
 
-	printf("done\n");
+	printf("done: clock %d, left %d\n", clock, left);
 }
 
 static int find(const enum state *a, int size,
