@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.3 2012/08/18 07:43:52 urs Exp $
+ * $Id: wer-wars.c,v 1.4 2012/08/18 07:44:09 urs Exp $
  */
 
 #include <stdlib.h>
@@ -40,9 +40,9 @@ static void play(int n)
 {
 	int nunknown = n;
 	int m = n + 2;
-	enum state a[n + 3];
+	enum state a[m + 1];
 	int clock = 0;
-	int pos = 0, sw, f, f2;
+	int pos = 0, new, peek, sw, f, f2;
 	int i;
 
 	for (i = 0; i < sizeof(a) / sizeof(a[0]); i++)
@@ -88,9 +88,10 @@ static void play(int n)
 		case D_1:
 		case D_2:
 		case D_3:
-			printf("walk %d -> %d\n", pos, (pos + d) % m);
-			pos = (pos + d) % m;
+			new = (pos + d) % m;
+			printf("walk %d -> %d\n", pos, new);
 
+			pos = new;
 			switch (a[pos]) {
 			case CLOCK:
 				clock++;
@@ -101,12 +102,12 @@ static void play(int n)
 				break;
 			case PEEK:
 				f = find(a, m, UNKNOWN, pos + 1, m);
-				if (f >= 0) {
-					a[(pos + 1 + f) % m] = KNOWN;
-					nunknown--;
-					printf("peek %d, left %d\n",
-					       (pos + 1 + f) % m, nunknown);
-				}
+				if (f < 0)
+					break;
+				peek = (pos + 1 + f) % m;
+				a[peek] = KNOWN;
+				nunknown--;
+				printf("peek %d, left %d\n", peek, nunknown);
 				break;
 			case UNKNOWN:
 				printf("guess %d: ", pos);
