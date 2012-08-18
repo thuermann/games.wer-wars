@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.5 2012/08/18 07:44:23 urs Exp $
+ * $Id: wer-wars.c,v 1.6 2012/08/18 07:44:36 urs Exp $
  */
 
 #include <stdlib.h>
@@ -14,7 +14,7 @@ static void usage(const char *name)
 enum die { D_1 = 1, D_2, D_3, D_123, D_CLOCK, D_GHOST };
 enum state { CLOCK, JUMP, PEEK, UNKNOWN, KNOWN, OPEN };
 
-static void play(int n);
+static void play(int n, int limit);
 static int  find(const enum state *a, int size,
 		 enum state what, int pos, int steps);
 static void swap(enum state *a, enum state *b);
@@ -24,6 +24,8 @@ static int rnd(int min, int max);
 
 int main(int argc, char **argv)
 {
+	int limit = 12;
+
 	if (argc != 2) {
 		usage(argv[0]);
 		exit(1);
@@ -31,12 +33,12 @@ int main(int argc, char **argv)
 
 	int n = atoi(argv[1]);
 
-	play(n);
+	play(n, limit);
 
 	return 0;
 }
 
-static void play(int n)
+static void play(int n, int limit)
 {
 	int nunknown = n;
 	int m = n + 2;
@@ -52,7 +54,7 @@ static void play(int n)
 	a[m/3]   = JUMP;
 	a[2*m/3] = PEEK;
 
-	while (nunknown > 1) {
+	while (nunknown > 1 && clock < limit) {
 		for (i = 0; i < sizeof(a) / sizeof(a[0]); i++)
 			printf(" %d", a[i]);
 		putchar('\n');
