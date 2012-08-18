@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.10 2012/08/18 07:45:28 urs Exp $
+ * $Id: wer-wars.c,v 1.11 2012/08/18 07:45:38 urs Exp $
  */
 
 #include <stdlib.h>
@@ -19,9 +19,11 @@ static void play(int n, int limit);
 static int  find(const enum state *a, int size,
 		 enum state what, int pos, int steps);
 static void swap(enum state *a, enum state *b);
+static void init_die(unsigned int seed);
 static enum die die(void);
+static void init_guess(unsigned int seed);
 static int guess(int nunknown);
-static int rnd(int min, int max);
+static int rnd(int min, int max, unsigned int *seedp);
 
 int main(int argc, char **argv)
 {
@@ -55,6 +57,8 @@ int main(int argc, char **argv)
 
 	for (i = 0; i < count; i++) {
 		printf("---- game %d ----\n", i);
+		init_die(i);
+		init_guess(i);
 		play(n, limit);
 	}
 
@@ -210,17 +214,29 @@ static void swap(enum state *a, enum state *b)
 	tmp = *a, *a = *b, *b = tmp;
 }
 
+static unsigned int dseed = 1;
+static void init_die(unsigned int seed)
+{
+	dseed = seed;
+}
+
 static enum die die(void)
 {
-	return rnd(D_1, D_GHOST);
+	return rnd(D_1, D_GHOST, &dseed);
+}
+
+static unsigned int gseed = 1;
+static void init_guess(unsigned int seed)
+{
+	gseed = seed;
 }
 
 static int guess(int nunknown)
 {
-	return rnd(0, nunknown - 1) == 0;
+	return rnd(0, nunknown - 1, &gseed) == 0;
 }
 
-static int rnd(int min, int max)
+static int rnd(int min, int max, unsigned int *seedp)
 {
-	return min + rand() % (max + 1 - min);
+	return min + rand_r(seedp) % (max + 1 - min);
 }
