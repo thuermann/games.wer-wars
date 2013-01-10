@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.12 2013/01/10 02:27:23 urs Exp $
+ * $Id: wer-wars.c,v 1.13 2013/01/10 02:44:37 urs Exp $
  */
 
 #include <stdlib.h>
@@ -73,17 +73,25 @@ int main(int argc, char **argv)
 
 static void play(int n, int limit)
 {
+	/* We have n fields with symbols to be revealed, plus CLOCK,
+	 * JUMP, and PEEK.  One of the n fields is at the GHOST and is
+	 * not part of the round trip.
+	 */
+	int size     = n + 3;
+	int len      = size - 1;
+	/* Initially, all n symbols are unknown and we have to open
+	 * all fields except the one at the GHOST.
+	 */
 	int nunknown = n;
-	int left = n - 1;
-	int m = n + 2;
-	enum state a[m + 1];
+	int left     = n - 1;
+	enum state a[size];
 	int clock = 0;
 	int pos = 0, new, peek, sw;
 
-	setup(a, m + 1);
+	setup(a, size);
 
 	while (left > 0 && clock < limit) {
-		print(a, m + 1);
+		print(a, size);
 
 		enum die d = die();
 
@@ -110,16 +118,16 @@ static void play(int n, int limit)
 			printf("clock: %d\n", clock);
 			break;
 		case D_GHOST:
-			sw = find_swap(a, m, pos);
-			printf("swap %d,%d\n", sw, m);
-			swap(&a[sw], &a[m]);
+			sw = find_swap(a, len, pos);
+			printf("swap %d,%d\n", sw, size - 1);
+			swap(&a[sw], &a[size - 1]);
 			break;
 		case D_123:
-			d = select_123(a, m, pos);
+			d = select_123(a, len, pos);
 		case D_1:
 		case D_2:
 		case D_3:
-			new = (pos + d) % m;
+			new = (pos + d) % len;
 			printf("walk %d -> %d\n", pos, new);
 		jump:
 			pos = new;
@@ -129,11 +137,11 @@ static void play(int n, int limit)
 				printf("clock: %d\n", clock);
 				break;
 			case JUMP:
-				new = select_jump(a, m, pos);
+				new = select_jump(a, len, pos);
 				printf("jump %d -> %d\n", pos, new);
 				goto jump;
 			case PEEK:
-				peek = select_peek(a, m, pos);
+				peek = select_peek(a, len, pos);
 				if (peek < 0)
 					break;
 				a[peek] = KNOWN;
@@ -175,15 +183,15 @@ static void play(int n, int limit)
 
 static void setup(enum state *a, int size)
 {
-	int m = size - 1;
+	int len = size - 1;
 	int i;
 
 	for (i = 0; i < size; i++)
 		a[i] = UNKNOWN;
 
-	a[0]     = CLOCK;
-	a[m/3]   = JUMP;
-	a[2*m/3] = PEEK;
+	a[0]       = CLOCK;
+	a[len/3]   = JUMP;
+	a[2*len/3] = PEEK;
 }
 
 static void print(const enum state *a, int size)
@@ -195,19 +203,19 @@ static void print(const enum state *a, int size)
 	putchar('\n');
 }
 
-static int select_123(const enum state *a, int size, int pos)
+static int select_123(const enum state *a, int len, int pos)
 {
 	int f, d;
 
-	if ((f = find(a, size, KNOWN, pos + 1, 3)) >= 0)
+	if ((f = find(a, len, KNOWN, pos + 1, 3)) >= 0)
 		d = f + 1;
-	else if ((f = find(a, size, JUMP, pos + 1, 3)) >= 0)
+	else if ((f = find(a, len, JUMP, pos + 1, 3)) >= 0)
 		d = f + 1;
-	else if ((f = find(a, size, PEEK, pos + 1, 3)) >= 0)
+	else if ((f = find(a, len, PEEK, pos + 1, 3)) >= 0)
 		d = f + 1;
-	else if ((f = find(a, size, UNKNOWN, pos + 1, 3)) >= 0)
+	else if ((f = find(a, len, UNKNOWN, pos + 1, 3)) >= 0)
 		d = f + 1;
-	else if ((f = find(a, size, OPEN, pos + 1, 3)) >= 0)
+	else if ((f = find(a, len, OPEN, pos + 1, 3)) >= 0)
 		d = f + 1;
 	else
 		assert(0);
@@ -215,50 +223,50 @@ static int select_123(const enum state *a, int size, int pos)
 	return d;
 }
 
-static int select_jump(const enum state *a, int size, int pos)
+static int select_jump(const enum state *a, int len, int pos)
 {
 	int f, new;
 
-	if ((f = find(a, size, KNOWN, pos + 1, size)) >= 0)
-		new = (pos + 1 + f) % size;
-	else if ((f = find(a, size, PEEK, pos + 1, size)) >= 0)
-		new = (pos + 1 + f) % size;
+	if ((f = find(a, len, KNOWN, pos + 1, len)) >= 0)
+		new = (pos + 1 + f) % len;
+	else if ((f = find(a, len, PEEK, pos + 1, len)) >= 0)
+		new = (pos + 1 + f) % len;
 	else
 		assert(0);
 
 	return new;
 }
 
-static int select_peek(const enum state *a, int size, int pos)
+static int select_peek(const enum state *a, int len, int pos)
 {
-	int f = find(a, size, UNKNOWN, pos + 1, size);
+	int f = find(a, len, UNKNOWN, pos + 1, len);
 
-	return f < 0 ? -1 : (pos + 1 + f) % size;
+	return f < 0 ? -1 : (pos + 1 + f) % len;
 }
 
-static int find_swap(const enum state *a, int size, int pos)
+static int find_swap(const enum state *a, int len, int pos)
 {
 	int sw;
-	int f1 = find(a, size, UNKNOWN, pos + 1, size);
-	int f2 = find(a, size, KNOWN, pos + 1, size);
+	int f1 = find(a, len, UNKNOWN, pos + 1, len);
+	int f2 = find(a, len, KNOWN, pos + 1, len);
 
 	assert(f1 >= 0 || f2 >= 0);
 	assert(f1 != f2);
 
 	if (f2 < 0 || f1 >= 0 && f1 < f2)
-		sw = (pos + 1 + f1) % size;
+		sw = (pos + 1 + f1) % len;
 	else
-		sw = (pos + 1 + f2) % size;
+		sw = (pos + 1 + f2) % len;
 	return sw;
 }
 
-static int find(const enum state *a, int size,
+static int find(const enum state *a, int len,
 		enum state what, int pos, int steps)
 {
 	int i;
 
 	for (i = 0; i < steps; i++)
-		if (a[(pos + i) % size] == what)
+		if (a[(pos + i) % len] == what)
 			return i;
 	return -1;
 }
