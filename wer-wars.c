@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.13 2013/01/10 02:44:37 urs Exp $
+ * $Id: wer-wars.c,v 1.14 2013/01/10 02:49:46 urs Exp $
  */
 
 #include <stdlib.h>
@@ -196,10 +196,11 @@ static void setup(enum state *a, int size)
 
 static void print(const enum state *a, int size)
 {
+	static const char sym[] = "CJP?-+";
 	int i;
 
 	for (i = 0; i < size; i++)
-		printf(" %d", a[i]);
+		printf(" %c", sym[a[i]]);
 	putchar('\n');
 }
 
