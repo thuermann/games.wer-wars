@@ -1,5 +1,5 @@
 /*
- * $Id: wer-wars.c,v 1.14 2013/01/10 02:49:46 urs Exp $
+ * $Id: wer-wars.c,v 1.15 2013/06/04 08:50:57 urs Exp $
  */
 
 #include <stdlib.h>
@@ -11,6 +11,10 @@ static void usage(const char *name)
 {
 	fprintf(stderr, "Usage: %s [-c count] [-l limit] [-n n]\n", name);
 }
+
+#ifndef unreachable
+#define unreachable() (assert(!"reached"))
+#endif
 
 enum die { D_1 = 1, D_2, D_3, D_123, D_CLOCK, D_GHOST };
 enum state { CLOCK, JUMP, PEEK, UNKNOWN, KNOWN, OPEN };
@@ -219,7 +223,7 @@ static int select_123(const enum state *a, int len, int pos)
 	else if ((f = find(a, len, OPEN, pos + 1, 3)) >= 0)
 		d = f + 1;
 	else
-		assert(0);
+		unreachable();
 
 	return d;
 }
@@ -233,7 +237,7 @@ static int select_jump(const enum state *a, int len, int pos)
 	else if ((f = find(a, len, PEEK, pos + 1, len)) >= 0)
 		new = (pos + 1 + f) % len;
 	else
-		assert(0);
+		unreachable();
 
 	return new;
 }
